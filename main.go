@@ -46,15 +46,6 @@ func main() {
 		talkToAi()
 	}
 
-	testing()
-}
-
-func testing() {
-	newPrompt := "result"
-
-	messages := textMessages.CreateMessageThread(newPrompt)
-	res := openai.QueryOpenAi(messages)
-	textMessages.LogResult(newPrompt, res)
 }
 
 func talkToAi() {

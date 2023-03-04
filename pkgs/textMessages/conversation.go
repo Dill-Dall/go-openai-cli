@@ -2,7 +2,7 @@ package textMessages
 
 import (
 	"fmt"
-	"go_openai_client/pkgs/openai"
+	"go_openai_cli/pkgs/openai"
 	"io/ioutil"
 	"os"
 	"path/filepath"
