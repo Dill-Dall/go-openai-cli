@@ -36,7 +36,7 @@ func main() {
 ║           Welcome to the Go Openai Client!         ║
 ║           a client tool made by Dill-Dall          ║
 ║                                                    ║
-║  https://github.com/Dill-Dall/go-openai-client     ║
+║  https://github.com/Dill-Dall/go-openai-cli        ║
 ╚════════════════════════════════════════════════════╝`)
 	fmt.Println()
 	color.Unset()
@@ -77,10 +77,10 @@ func talkToAi() {
 			fmt.Println("Speaker disabled.")
 		}
 		return
-	case promptResult == "/lngm":
+	case promptResult == "/lngmdl":
 		selectLanguageModelByPrompt()
 		return
-	case promptResult == "/sysmodel":
+	case promptResult == "/sysmdl":
 		selectSystemModelByPrompt()
 		return
 	case strings.HasPrefix(promptResult, "/clean"):
@@ -92,6 +92,7 @@ func talkToAi() {
 			textMessages.DeleteLogFolder()
 			fmt.Println("Logs/Conversation folder deleted.")
 		}
+		return
 	case promptResult == "c":
 		promptResult = "continue"
 	case promptResult == "/help":
@@ -102,6 +103,10 @@ func talkToAi() {
 		return
 	}
 
+	PromptAi(promptResult)
+}
+
+func PromptAi(promptResult string) {
 	messages := textMessages.CreateMessageThread(promptResult)
 	spinner := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	spinner.Prefix = "Thinking... "
@@ -123,11 +128,11 @@ func talkToAi() {
 func printHelpMessage() {
 	color.Set(color.FgYellow)
 	fmt.Println(`
-'Type one of the following commands:
+Type one of the following commands:
 '/end' to exit the program.
 '/close' to start a new chat session and archive the current conversation. 
 '/speak' to toggle speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
-'/lngm' to select language model, chatgpt or davinci.
+'/lngmdl' to select language model, chatgpt or davinci.
 '/sysmdl' to select system model.
 '/clean' delete -l "log" and -a "audio" folders at local path. 
 'c' shortcut for continue.
