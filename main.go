@@ -98,10 +98,9 @@ func talkToAi() {
 			fmt.Println("Audio folder deleted.")
 		}
 		if strings.Contains(promptResult, "-l") {
-			textMessages.DeleteAudioFolder()
+			textMessages.DeleteLogFolder()
 			fmt.Println("Logs/Conversation folder deleted.")
 		}
-		return
 	case promptResult == "c":
 		promptResult = "continue"
 	case promptResult == "/help":
@@ -135,12 +134,14 @@ func printHelpMessage() {
 	fmt.Println(`
 'Type one of the following commands:
 '/end' to exit the program.
-'/close' to start a new chat session and archive the current conversation.
+'/close' to start a new chat session and archive the current conversation. 
 '/speak' to toggle speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
 '/lngm' to select language model, chatgpt or davinci.
 '/sysmdl' to select system model.
-'/clean' delete "log" and "audio" folders at local path. 
-'c' shortcut for continue.`)
+'/clean' delete -l "log" and -a "audio" folders at local path. 
+'c' shortcut for continue.
+Else just type your question, directly. 
+- audio are saved to local audio folder, same with logs.`)
 	fmt.Println()
 	color.Unset()
 }
