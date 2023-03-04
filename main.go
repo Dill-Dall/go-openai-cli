@@ -11,9 +11,9 @@ import (
 	"github.com/joho/godotenv"
 	"github.com/manifoldco/promptui"
 
-	"go_openai_client/pkgs/audio"
-	"go_openai_client/pkgs/openai"
-	"go_openai_client/pkgs/textMessages"
+	"go_openai_cli/pkgs/audio"
+	"go_openai_cli/pkgs/openai"
+	"go_openai_cli/pkgs/textMessages"
 
 	"github.com/briandowns/spinner"
 )
