@@ -1,4 +1,4 @@
-module go_openai_client
+module go_openai_cli
 
 go 1.19
 
