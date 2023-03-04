@@ -14,11 +14,13 @@ The following commands are available:
 * `/help`: Display the help message
 
 Introduction
-------------
+-----
 
 This project is a command-line chatbot that uses OpenAI's API to generate responses to user queries. The chatbot is built in Go and consists of four main packages: `audio`, `openai`, `textMessages`, and `main`.
 
 The `audio` package is responsible for creating and playing audio files that contain the AI's responses. The `openai` package handles requests and responses to and from OpenAI's API. The `textMessages` package is responsible for logging conversations and rotating logs to archive older conversations. The `main` package ties everything together, providing a command-line interface for the chatbot and user interaction.
+
+Disclaimer: Of course the I have gotten a lot of help from the OpenAI to create this client
 
 Usage
 -----
@@ -46,11 +48,18 @@ Files
 
 Roadmap
 ---
+
 * Voice feature for talking  back and forth with the cli without needing  input
 * Maintaining log and audio files
+* Error handling and Testing
 * ...
 
 License
 -------
 
 This project is licensed under the [MIT license](https://opensource.org/licenses/MIT).
+
+Example of usage
+-------
+
+![Exmple of cli](Example.png)

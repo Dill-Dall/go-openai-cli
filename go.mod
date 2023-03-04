@@ -16,13 +16,16 @@ require (
 	cloud.google.com/go/compute v1.12.1 // indirect
 	cloud.google.com/go/longrunning v0.3.0 // indirect
 	golang.org/x/oauth2 v0.0.0-20221014153046-6fdb5e3db783 // indirect
+	golang.org/x/term v0.1.0 // indirect
 	google.golang.org/genproto v0.0.0-20221201164419-0e50fba7f41c // indirect
 )
 
 require (
 	cloud.google.com/go v0.107.0 // indirect
 	cloud.google.com/go/compute/metadata v0.2.1 // indirect
+	github.com/briandowns/spinner v1.22.0
 	github.com/chzyer/readline v0.0.0-20180603132655-2972be24d48e // indirect
+	github.com/eiannone/keyboard v0.0.0-20220611211555-0d226195f203
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/golang/protobuf v1.5.2 // indirect
 	github.com/google/go-cmp v0.5.9 // indirect

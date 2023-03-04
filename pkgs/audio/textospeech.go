@@ -4,6 +4,8 @@ import (
 	"context"
 	"io/ioutil"
 	"log"
+	"os"
+	"path/filepath"
 	"time"
 
 	texttospeech "cloud.google.com/go/texttospeech/apiv1"
@@ -47,12 +49,24 @@ func CreateMp3(message string) string {
 		log.Fatal(err)
 	}
 
-	// The resp's AudioContent is binary.
 	filename := "output-" + time.Now().Format("2006-01-02-15-04-05") + ".mp3"
-	err = ioutil.WriteFile(filename, resp.AudioContent, 0644)
-	if err != nil {
-		log.Fatal(err)
-	}
 
-	return filename
+	dir := filepath.Join(".", "audio")
+	os.MkdirAll(dir, os.ModePerm)
+
+	filepath := filepath.Join(dir, filename)
+	err = ioutil.WriteFile(filepath, resp.AudioContent, 0644)
+
+	return filepath
+}
+
+func DeleteAudioFolder() error {
+	if _, err := os.Stat("audio"); err == nil {
+		// audio directory exists, delete it
+		err = os.RemoveAll("audio")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
 }

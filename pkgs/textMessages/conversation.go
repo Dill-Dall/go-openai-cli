@@ -127,3 +127,13 @@ func readLogMessages() ([]gogpt.ChatCompletionMessage, error) {
 	}
 	return logMessages, nil
 }
+
+func DeleteLogFolder() error {
+	if _, err := os.Stat("logs"); err == nil {
+		err = os.RemoveAll("logs")
+		if err != nil {
+			return err
+		}
+	}
+	return nil
+}

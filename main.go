@@ -3,6 +3,8 @@ package main
 import (
 	"fmt"
 	"os"
+	"strings"
+	"time"
 
 	"github.com/fatih/color"
 
@@ -12,11 +14,13 @@ import (
 	"go_openai_client/pkgs/audio"
 	"go_openai_client/pkgs/openai"
 	"go_openai_client/pkgs/textMessages"
+
+	"github.com/briandowns/spinner"
 )
 
 var (
 	prompt = promptui.Prompt{
-		Label:       "Question",
+		Label:       "",
 		HideEntered: true,
 	}
 	speakToggle = false
@@ -25,12 +29,19 @@ var (
 func main() {
 	godotenv.Load()
 	openai.Init()
-	fmt.Println("Welcome to the AI chatbot!")
-	fmt.Println("Enter your questions below.")
 
+	color.Set(color.FgHiCyan)
+	fmt.Println(`
+╔════════════════════════════════════════════════════╗
+║           Welcome to the Go Openai Client!         ║
+║           a client tool made by Dill-Dall          ║
+║                                                    ║
+║  https://github.com/Dill-Dall/go-openai-client     ║
+╚════════════════════════════════════════════════════╝`)
+	fmt.Println()
+	color.Unset()
 	printHelpMessage()
 
-	//openai.SelectSystemModel("DnDm")
 	for true {
 		talkToAi()
 	}
@@ -48,11 +59,13 @@ func testing() {
 
 func talkToAi() {
 	promptResult, err := prompt.Run()
-	fmt.Printf("\033[32m%s\033[0m Question: %s\n\n", "v", promptResult)
+	fmt.Printf("\033[32mv :\033[0m \033[34m%s\033[0m\n\n", promptResult)
 	if err != nil {
 		fmt.Println(err)
 		os.Exit(1)
 	}
+
+	promptResult = strings.Trim(promptResult, " ")
 
 	switch {
 	case promptResult == "/end":
@@ -79,35 +92,56 @@ func talkToAi() {
 	case promptResult == "/sysmodel":
 		selectSystemModelByPrompt()
 		return
-	case promptResult == "/gpt":
-		fmt.Println("Switching to ChatGPT model...")
-		openai.SetModel(openai.GPTModel)
+	case strings.HasPrefix(promptResult, "/clean"):
+		if strings.Contains(promptResult, "-a") {
+			audio.DeleteAudioFolder()
+			fmt.Println("Audio folder deleted.")
+		}
+		if strings.Contains(promptResult, "-l") {
+			textMessages.DeleteAudioFolder()
+			fmt.Println("Logs/Conversation folder deleted.")
+		}
 		return
 	case promptResult == "c":
 		promptResult = "continue"
 	case promptResult == "/help":
 		printHelpMessage()
 		return
+	case strings.HasPrefix(promptResult, "/"):
+		fmt.Println("Invalid input")
+		return
 	}
 
 	messages := textMessages.CreateMessageThread(promptResult)
+	spinner := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
+	spinner.Prefix = "Thinking... "
+	spinner.Start()
 	response := openai.QueryOpenAi(messages)
+	spinner.Stop()
 	fmt.Println(response + "\n")
+
 	textMessages.LogResult(promptResult, response)
 	if speakToggle {
+		spinner.Prefix = "Synthing... "
+		spinner.Start()
 		mp3File := audio.CreateMp3(response)
+		spinner.Stop()
 		audio.PlaySound(mp3File)
 	}
 }
 
 func printHelpMessage() {
 	color.Set(color.FgYellow)
-	fmt.Println("Type '/end' to exit the program.")
-	fmt.Println("Type '/close' to start a new chat session and archive the current conversation.")
-	fmt.Println("Type '/speak' to toggle speaker on.")
-	fmt.Println("Type '/lngm' to select language model, chatgpt or davinci.")
-	fmt.Println("Type '/sysmodel' to select system model.")
-	fmt.Println("Type 'c' shortcut for continue.")
+	fmt.Println(`
+'Type one of the following commands:
+'/end' to exit the program.
+'/close' to start a new chat session and archive the current conversation.
+'/speak' to toggle speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
+'/lngm' to select language model, chatgpt or davinci.
+'/sysmdl' to select system model.
+'/clean' delete "log" and "audio" folders at local path. 
+'c' shortcut for continue.`)
+	fmt.Println()
 	color.Unset()
 }
 

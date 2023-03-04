@@ -4,6 +4,7 @@ import (
 	"os"
 	"time"
 
+	"github.com/eiannone/keyboard"
 	"github.com/hajimehoshi/go-mp3"
 	"github.com/hajimehoshi/oto/v2"
 )
@@ -28,11 +29,30 @@ func PlaySound(file string) error {
 
 	p := c.NewPlayer(d)
 	defer p.Close()
+
 	p.Play()
 
+	stopPlayback := false
+
+	// Listen for space key
+	if err := keyboard.Open(); err != nil {
+		return err
+	}
+	defer keyboard.Close()
+
 	for {
-		time.Sleep(time.Second)
-		if !p.IsPlaying() {
+		if _, key, err := keyboard.GetKey(); err == nil {
+			if key == keyboard.KeySpace || key == keyboard.KeyEnter {
+				if stopPlayback {
+					break
+				}
+				stopPlayback = true
+			}
+		}
+
+		time.Sleep(time.Millisecond * 10)
+
+		if !p.IsPlaying() || stopPlayback {
 			break
 		}
 	}
