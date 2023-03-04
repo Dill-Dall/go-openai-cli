@@ -1,4 +1,4 @@
-## go_openai_client
+## go_openai_cli
 
 To start the chatbot, run `go run main.go` from the project directory. You will be prompted to enter a question or message. The chatbot will generate a response using the OpenAI API and display it in the terminal.
 
