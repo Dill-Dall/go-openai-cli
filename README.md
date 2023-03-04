@@ -47,6 +47,7 @@ Files
 Roadmap
 ---
 * Voice feature for talking  back and forth with the cli without needing  input
+* Maintaining log and audio files
 * ...
 
 License
