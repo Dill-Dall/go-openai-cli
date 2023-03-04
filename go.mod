@@ -5,6 +5,7 @@ go 1.19
 require (
 	cloud.google.com/go/texttospeech v1.6.0
 	github.com/fatih/color v1.14.1
+	github.com/gordonklaus/portaudio v0.0.0-20221027163845-7c3b689db3cc
 	github.com/hajimehoshi/go-mp3 v0.3.4
 	github.com/joho/godotenv v1.5.1
 	github.com/manifoldco/promptui v0.9.0

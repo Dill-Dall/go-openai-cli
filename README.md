@@ -22,7 +22,7 @@ The `audio` package is responsible for creating and playing audio files that con
 
 Disclaimer: Of course the I have gotten a lot of help from the OpenAI to create this client
 
-Usage
+Requirements
 -----
 
 To use the chatbot, you will need to set up an OpenAI API key and a Google Cloud service account key. Place your OpenAI API key in a file named `.env` in the root directory of the project with the following format:
@@ -33,6 +33,12 @@ GOOGLE_APPLICATION_CREDENTIALS=<GOOGLE_ACCOUNT_JSON_CREDENTIALS_LOCATION>
 ```
 
 Regarding using the Google Cloud service. It should be fairly simple to extract that feature from the project, or change it into usage of an opensource project instead. I just found the quality of Google Cloud text to speak so much better.
+
+For using 
+https://github.com/msys2/msys2/wiki/MSYS2-installation
+
+Usage
+-----
 
 `go run main.go`
 
