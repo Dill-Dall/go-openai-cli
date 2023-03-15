@@ -19,8 +19,9 @@ var regexForUserAssistant = regexp.MustCompile("#* *(USER|ASSISTANT):((.|\n)*?)\
 var subfolder = "AI"
 var aiLogFile = filepath.Join("logs", subfolder, "AI.md")
 
-func SetSubfolder(subfoldername string) {
-	aiLogFile = filepath.Join("logs", subfoldername, "AI.md")
+func SetSubfolder(subFolderName string) {
+	subfolder = subFolderName
+	aiLogFile = filepath.Join("logs", subFolderName, "AI.md")
 }
 
 func GetAiLogFile() string {

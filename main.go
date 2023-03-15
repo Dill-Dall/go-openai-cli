@@ -143,9 +143,15 @@ Else just type your question, directly.
 }
 
 func selectSystemModelByPrompt() {
+	var items []string
+	for name := range openai.SystemModels {
+		model, _ := openai.GetSystemModelByName(name)
+		items = append(items, model.String())
+	}
+
 	prompt := promptui.Select{
 		Label: "Select System Model",
-		Items: []string{openai.AI.String(), openai.Detective.String(), openai.DnDm.String(), openai.Editor.String()},
+		Items: items,
 	}
 	_, result, err := prompt.Run()
 
