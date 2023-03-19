@@ -25,6 +25,15 @@
   scroll-behavior: smooth;
 }
 
+.message img {
+  padding-top: 30px;
+  max-width: 512px;
+  height: auto;
+  margin-left: auto;
+  margin-right: auto; 
+  display: block;
+}
+
 .messages::-webkit-scrollbar {
   display: none;
 }

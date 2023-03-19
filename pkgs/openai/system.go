@@ -17,7 +17,7 @@ const (
 	AI         SystemModel = prefix + "AI. From now on, you will function as a character named AI. You are an AI engine."
 )
 
-const prefix = "Start every response message with a short title for the whole conversation. Example: Title: About Leopards\nUse MD syntax on your responses.\n\n Then create the perfect up to 400 characters prompt for a ai generation tool, like DALL-E2 that matches the response. Example - IMAGE_PROMPT: 3D render of a cute tropical fish in an aquarium on a dark blue background, digital art"
+const prefix = "Start every response message with a short title for the whole conversation. Example: Title: About Leopards\nUse MD syntax on your responses.\n\n Then create the perfect up to 400 characters prompt for a ai generation tool, like DALL-E2 that matches the response. Pattern  \"IMAGE_PROMPT: [3D render of a cute tropical fish in an aquarium on a dark blue background, digital art]\""
 
 var systemModelNames = map[SystemModel]string{
 	DnDm:       "DnDm",

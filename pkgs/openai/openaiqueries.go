@@ -78,3 +78,15 @@ func Davinci(messages []gogpt.ChatCompletionMessage) string {
 
 	return resp.Choices[0].Text
 }
+
+func Dalle(prompt string) string {
+	imageRequest := gogpt.ImageRequest{
+		Prompt: prompt,
+		N:      1,
+		Size:   "512x512",
+	}
+	resp, _ := goClient.CreateImage(ctx, imageRequest)
+
+	return resp.Data[0].URL
+
+}

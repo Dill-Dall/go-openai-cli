@@ -16,7 +16,6 @@ type MainProps = {
 	isLoading: boolean;
 };
 
-
 const Main: React.FC<MainProps> = ({
 	selectedConversationMessages,
 	messagesEndRef,
@@ -37,7 +36,7 @@ const Main: React.FC<MainProps> = ({
 						key={i}
 						className={`message ${i % 2 === 0 ? "even-message" : "odd-message"}`}
 					>
-						<ReactMarkdown>{strippedMessage(message)}</ReactMarkdown>
+						<ReactMarkdown>{addaptedMessage(message)}</ReactMarkdown>
 					</div>
 				))}
 				<div ref={messagesEndRef} />
@@ -77,9 +76,13 @@ const handleTextareaKeyDown = (event: React.KeyboardEvent<HTMLTextAreaElement>, 
 
 
 
-const strippedMessage = (message: string) => {
+const addaptedMessage = (message: string) => {
+
 	message = message.replace(/^(USER|ASSISTANT):\s*/, "");
 	message = message.replace(/^Title:.*/, "");
+
+	const urlRegex = /URL_\[([^\]]+)\]/g;
+	message = message.replace(urlRegex, '![alt text]($1)');
 
 	return message;
 }

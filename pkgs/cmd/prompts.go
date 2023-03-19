@@ -7,6 +7,7 @@ import (
 	"go_openai_cli/pkgs/openai"
 	"go_openai_cli/pkgs/textMessages"
 	"os"
+	"regexp"
 	"strings"
 	"time"
 
@@ -100,11 +101,15 @@ func PromptAi(promptModel api.PromptModel) string {
 	if len(promptModel.ID) == 0 {
 		promptModel.ID = uuid.New().String()
 	}
+
 	messages := textMessages.CreateMessageThread(promptModel)
 	spinner := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	spinner.Prefix = "Thinking... "
 	spinner.Start()
 	response := openai.QueryOpenAi(messages)
+
+	response = DoDalle(response)
+
 	spinner.Stop()
 	fmt.Println(response + "\n")
 
@@ -119,6 +124,19 @@ func PromptAi(promptModel api.PromptModel) string {
 	}
 
 	return promptModel.ID
+}
+
+func DoDalle(response string) string {
+	re := regexp.MustCompile(`IMAGE_PROMPT:\s*\[([^]]*)\]`)
+	response = re.ReplaceAllStringFunc(response, func(match string) string {
+		dallePrompt := re.FindStringSubmatch(match)
+		if len(dallePrompt) == 2 {
+			response := openai.Dalle(dallePrompt[1])
+			return "URL_["+response+"]"
+		}
+		return match
+	})
+	return response
 }
 
 func PrintHelpMessage() {
