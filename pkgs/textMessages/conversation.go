@@ -2,6 +2,7 @@ package textMessages
 
 import (
 	"fmt"
+	"go_openai_cli/pkgs/api"
 	"go_openai_cli/pkgs/openai"
 	"io/ioutil"
 	"os"
@@ -28,13 +29,13 @@ func GetAiLogFile() string {
 	return aiLogFile
 }
 
-func LogResult(inputPrompt, response string) error {
+func LogResult(conversationID, inputPrompt, response string) error {
 	logDate := time.Now().Format("2006-01-02 15:04:05")
 	logDir := filepath.Join(".", "logs", subfolder)
 	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
 		return errors.Wrap(err, "failed to create log directory")
 	}
-	logFile := filepath.Join(logDir, "AI.md")
+	logFile := filepath.Join(logDir, fmt.Sprintf("%s.md", conversationID))
 
 	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
@@ -49,7 +50,24 @@ func LogResult(inputPrompt, response string) error {
 	return nil
 }
 
-func RotateLogFile(fileTitle string) error {
+func DeleteLogFile(conversationID string) error {
+	logDir := filepath.Dir(aiLogFile)
+	logFile := filepath.Join(logDir, fmt.Sprintf("%s.md", conversationID))
+
+	// check if the log file exists
+	if _, err := os.Stat(logFile); os.IsNotExist(err) {
+		return fmt.Errorf("log file does not exist for conversation ID %s", conversationID)
+	}
+
+	// delete the log file
+	if err := os.Remove(logFile); err != nil {
+		return errors.Wrap(err, "failed to delete log file")
+	}
+
+	return nil
+}
+
+func RotateLogFile(conversationID, fileTitle string) error {
 	logDir := filepath.Dir(aiLogFile)
 	if _, err := os.Stat(logDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
@@ -57,7 +75,8 @@ func RotateLogFile(fileTitle string) error {
 		}
 	}
 
-	logText, err := ioutil.ReadFile(aiLogFile)
+	logFile := filepath.Join(logDir, fmt.Sprintf("%s.md", conversationID))
+	logText, err := ioutil.ReadFile(logFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to read log file")
 	}
@@ -79,36 +98,48 @@ func RotateLogFile(fileTitle string) error {
 	return nil
 }
 
-func CreateMessageThread(newPrompt string) []gogpt.ChatCompletionMessage {
+func CreateMessageThread(promptModel api.PromptModel) []gogpt.ChatCompletionMessage {
 	messages := []gogpt.ChatCompletionMessage{}
-	newMessage := gogpt.ChatCompletionMessage{Role: "user", Content: newPrompt}
+	newMessage := gogpt.ChatCompletionMessage{Role: "user", Content: promptModel.Content}
 	// create log file directory if it doesn't exist
 	logDir := filepath.Dir(aiLogFile)
 	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
 		fmt.Printf("Error creating log file directory: %v\n", err)
 	}
 
-	// create log file if it doesn't exist
-	if _, err := os.Stat(aiLogFile); os.IsNotExist(err) {
-		if _, err := os.Create(aiLogFile); err != nil {
+	logFile := filepath.Join(logDir, fmt.Sprintf("%s.md", promptModel.ID))
+	if _, err := os.Stat(logFile); os.IsNotExist(err) {
+		file, err := os.Create(logFile)
+		if err != nil {
 			fmt.Printf("Error creating log file: %v\n", err)
 		}
+		defer file.Close()
+		file.WriteString(fmt.Sprintf("# Conversation ID: %s\n", promptModel.ID))
 	}
 
 	// read existing log messages from file
-	previousMessages, err := readLogMessages()
+	previousMessages, err := ReadLogMessages(promptModel.ID)
 	if err != nil {
 		fmt.Printf("Error reading log messages: %v\n", err)
 	}
-	messages = append(messages, openai.SystemMessage(openai.GetSystemModel()))
+
+	sysmodel, found := openai.GetSystemModelByName(promptModel.SystemModel)
+	if !found {
+		sysmodel = openai.GetSystemModel()
+	}
+
+	messages = append(messages, openai.SystemMessage(sysmodel))
 	messages = append(messages, previousMessages...)
 	messages = append(messages, newMessage)
 	return messages
 }
 
-func readLogMessages() ([]gogpt.ChatCompletionMessage, error) {
+func ReadLogMessages(conversationID string) ([]gogpt.ChatCompletionMessage, error) {
 
-	logText, err := ioutil.ReadFile(aiLogFile)
+	logDir := filepath.Dir(aiLogFile)
+	logFile := filepath.Join(logDir, fmt.Sprintf("%s.md", conversationID))
+	logText, err := ioutil.ReadFile(logFile)
+
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read log file")
 	}
@@ -137,4 +168,120 @@ func DeleteLogFolder() error {
 		}
 	}
 	return nil
+}
+
+func LoadConversations() ([]api.Conversation, error) {
+	conversations := []api.Conversation{}
+
+	logDir := filepath.Dir(aiLogFile)
+	files, err := ioutil.ReadDir(logDir)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read log directory")
+	}
+
+	identityRegex := regexp.MustCompile(`# Conversation ID: (.*)`)
+	for _, file := range files {
+		if !file.IsDir() {
+			filePath := filepath.Join(logDir, file.Name())
+			content, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to read conversation file")
+			}
+
+			identityMatch := identityRegex.FindStringSubmatch(string(content))
+			if len(identityMatch) > 1 {
+				conversationID := identityMatch[1]
+				messages, err := ReadLogMessages(conversationID)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to read log messages for conversation")
+				}
+
+				conversationName := getLastTitleLine(messages)
+
+				if len(conversationName) == 0 {
+					conversationName = filepath.Base(file.Name())
+				}
+
+				conversations = append(conversations, api.Conversation{
+					ID:       conversationID,
+					Name:     conversationName,
+					Messages: messagesToStrings(messages),
+				})
+			}
+		}
+	}
+
+	return conversations, nil
+}
+
+func LoadConversation(conversationID string) (*api.Conversation, error) {
+	logDir := filepath.Dir(aiLogFile)
+	files, err := ioutil.ReadDir(logDir)
+	if err != nil {
+		return nil, errors.Wrap(err, "failed to read log directory")
+	}
+
+	identityRegex := regexp.MustCompile(`# Conversation ID: (.*)`)
+	for _, file := range files {
+		if !file.IsDir() {
+			filePath := filepath.Join(logDir, file.Name())
+			content, err := ioutil.ReadFile(filePath)
+			if err != nil {
+				return nil, errors.Wrap(err, "failed to read conversation file")
+			}
+
+			identityMatch := identityRegex.FindStringSubmatch(string(content))
+			if len(identityMatch) > 1 && identityMatch[1] == conversationID {
+				messages, err := ReadLogMessages(conversationID)
+				if err != nil {
+					return nil, errors.Wrap(err, "failed to read log messages for conversation")
+				}
+
+				conversationName := getLastTitleLine(messages)
+
+				if len(conversationName) == 0 {
+					conversationName = filepath.Base(file.Name())
+				}
+
+				return &api.Conversation{
+					ID:       conversationID,
+					Name:     conversationName,
+					Messages: messagesToStrings(messages),
+				}, nil
+			}
+		}
+	}
+
+	return nil, errors.New("conversation not found")
+}
+
+func messagesToStrings(messages []gogpt.ChatCompletionMessage) []string {
+	messageStrings := make([]string, len(messages))
+	for i, msg := range messages {
+		messageStrings[i] = fmt.Sprintf("%s: %s", strings.ToUpper(msg.Role), msg.Content)
+	}
+	return messageStrings
+}
+
+func getLastTitleLine(messages []gogpt.ChatCompletionMessage) string {
+	var lastTitleLine string
+	for i := len(messages) - 1; i >= 0; i-- {
+		msg := messages[i]
+		lines := strings.Split(msg.Content, "\n")
+		for _, line := range lines {
+			if strings.HasPrefix(line, "Title:") {
+				lastTitleLine = strings.Split(line, "Title:")[1]
+			}
+		}
+		if lastTitleLine != "" {
+			break
+		}
+	}
+	if lastTitleLine == "" {
+		// Uses the first line as the title
+		if len(messages[0].Content) > 60 {
+			lastTitleLine = messages[0].Content[0:60] + "..."
+		}
+	}
+	return lastTitleLine
 }

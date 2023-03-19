@@ -1,0 +1,45 @@
+/* Add or update the .main selector */
+.main {
+  margin-left: 300px;
+  padding: 16px;
+  display: flex;
+  flex-direction: column;
+  height: calc(100vh - 16px);
+  width: calc(
+    100% - 300px
+  ); /* Set the width of the main area, subtracting the sidebar width */
+  justify-content: flex-end; /* Align the messages and input container at the bottom */
+}
+
+.messages {
+  background-color: #444;
+  border-radius: 5px;
+  margin-bottom: 10px;
+  padding: 16px;
+  padding-left: 10%;
+  padding-right: 10%;
+
+  text-align: left;
+  overflow-y: auto;
+  width: 100%;
+  scroll-behavior: smooth;
+}
+
+.messages::-webkit-scrollbar {
+  display: none;
+}
+.input-container {
+  display: flex;
+  align-items: flex-end;
+  position: relative;
+  width: 100%; /* Set the desired width */
+  margin-bottom: 20px; /* Add a margin to the bottom */
+}
+
+.spinner {
+  display: flex;
+  justify-content: center;
+  margin-top: 10px;
+  color: #70b4e8;
+  background-color: #222;
+}

@@ -37,13 +37,7 @@ body {
   background-color: #444;
 }
 
-.spinner {
-  display: flex;
-  justify-content: center;
-  margin-top: 10px;
-  color: #70b4e8;
-  background-color: #222;
-}
+
 
 .sidebar {
   background-color: #333;
@@ -62,6 +56,8 @@ body {
   padding: 10px;
   margin-bottom: 10px;
   cursor: pointer;
+  display: flex;
+  justify-content: space-between;
 }
 
 .conversation.active {
@@ -81,8 +77,18 @@ body {
   width: 100%;
 }
 
-.add-conversation-button:hover {
-  background-color: #ff7a00;
+.add-conversation-button:hover,
+.add-conversation-button:focus {
+  color: #5f3106;
+}
+.delete-button {
+  margin: 0;
+  padding: 0;
+  align-self: end;
+}
+
+.delete-button:hover {
+  color: #ff7a00;
 }
 
 button {
@@ -162,38 +168,4 @@ textarea {
 .send-button:disabled {
   background-color: #ccc;
   cursor: not-allowed;
-}
-
-/* Add or update the .main selector */
-.main {
-  margin-left: 300px;
-  padding: 16px;
-  display: flex;
-  flex-direction: column;
-  height: calc(100vh - 16px);
-  width: calc(
-    70% - 300px
-  ); /* Set the width of the main area, subtracting the sidebar width */
-  justify-content: flex-end; /* Align the messages and input container at the bottom */
-}
-
-.messages {
-  background-color: #444;
-  border-radius: 5px;
-  margin-bottom: 10px;
-  padding: 10px;
-  text-align: left;
-  overflow-y: auto;
-  width: 100%;
-  max-height: calc(
-    100% - 100px
-  ); /* Adjust this value based on the desired height of the input container */
-}
-
-.input-container {
-  display: flex;
-  align-items: flex-end;
-  position: relative;
-  width: 100%; /* Set the desired width */
-  margin-bottom: 20px; /* Add a margin to the bottom */
 }
