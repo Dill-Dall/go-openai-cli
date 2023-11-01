@@ -3,7 +3,6 @@ package textMessages
 import (
 	"fmt"
 	"go_openai_cli/pkgs/openai"
-	"io/ioutil"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -19,7 +18,7 @@ var regexForUserAssistant = regexp.MustCompile("#* *(USER|ASSISTANT):((.|\n)*?)\
 var subfolder = "AI"
 var aiLogFile = filepath.Join("logs", subfolder, "AI.md")
 
-func SetSubfolder(subFolderName string) {
+func SetLogSubFolder(subFolderName string) {
 	subfolder = subFolderName
 	aiLogFile = filepath.Join("logs", subFolderName, "AI.md")
 }
@@ -57,7 +56,7 @@ func RotateLogFile(fileTitle string) error {
 		}
 	}
 
-	logText, err := ioutil.ReadFile(aiLogFile)
+	logText, err := os.ReadFile(aiLogFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to read log file")
 	}
@@ -68,11 +67,11 @@ func RotateLogFile(fileTitle string) error {
 	newLogFile := filepath.Join(logDir, fmt.Sprintf("AI-%s-%s.md", timestamp, fileTitle))
 	fmt.Println("copying log file to", newLogFile)
 
-	if err := ioutil.WriteFile(newLogFile, logText, 0644); err != nil {
+	if err := os.WriteFile(newLogFile, logText, 0644); err != nil {
 		return errors.Wrap(err, "failed to create new log file")
 	}
 
-	if err := ioutil.WriteFile(aiLogFile, []byte{}, 0644); err != nil {
+	if err := os.WriteFile(aiLogFile, []byte{}, 0644); err != nil {
 		return errors.Wrap(err, "failed to clear log file")
 	}
 
@@ -108,7 +107,7 @@ func CreateMessageThread(newPrompt string) []gogpt.ChatCompletionMessage {
 
 func readLogMessages() ([]gogpt.ChatCompletionMessage, error) {
 
-	logText, err := ioutil.ReadFile(aiLogFile)
+	logText, err := os.ReadFile(aiLogFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read log file")
 	}

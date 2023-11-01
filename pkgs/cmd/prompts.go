@@ -94,6 +94,7 @@ func PromptAi(promptResult string) {
 		spinner.Prefix = "Synthing... "
 		spinner.Start()
 		mp3File := audio.CreateMp3(response)
+		//_ = audio.CreateMp3(response)
 		spinner.Stop()
 		audio.PlaySound(mp3File)
 	}
@@ -139,7 +140,7 @@ func selectSystemModelByPrompt() {
 		return
 	}
 	fmt.Println("SystemModel set to: " + result)
-	textMessages.SetSubfolder(result)
+	textMessages.SetLogSubFolder(result)
 }
 
 func selectLanguageModelByPrompt() {

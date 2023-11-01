@@ -2,7 +2,7 @@ package audio
 
 import (
 	"context"
-	"io/ioutil"
+	"go_openai_cli/pkgs/openai"
 	"log"
 	"os"
 	"path/filepath"
@@ -21,7 +21,34 @@ func CreateMp3(message string) string {
 		log.Fatal(err)
 	}
 	defer client.Close()
-	//
+
+	var voiceParams *texttospeechpb.VoiceSelectionParams
+	var audioConfig *texttospeechpb.AudioConfig
+
+	if openai.GetSystemModel() == openai.Alfred {
+
+		voiceParams = &texttospeechpb.VoiceSelectionParams{
+			LanguageCode: "en-GB",
+			Name:         "en-GB-Standard-D",
+			SsmlGender:   texttospeechpb.SsmlVoiceGender_MALE,
+		}
+
+		audioConfig = &texttospeechpb.AudioConfig{
+			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
+			SpeakingRate:  1.2,
+		}
+	} else {
+		voiceParams = &texttospeechpb.VoiceSelectionParams{
+			LanguageCode: "en-GB",
+			Name:         "en-GB-Wavenet-C",
+			SsmlGender:   texttospeechpb.SsmlVoiceGender_FEMALE,
+		}
+
+		audioConfig = &texttospeechpb.AudioConfig{
+			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
+			SpeakingRate:  1.2,
+		}
+	}
 
 	// Perform the text-to-speech request on the text input with the selected
 	// voice parameters and audio file type.
@@ -30,18 +57,11 @@ func CreateMp3(message string) string {
 		Input: &texttospeechpb.SynthesisInput{
 			InputSource: &texttospeechpb.SynthesisInput_Text{Text: message},
 		},
+
 		// Build the voice request, select the language code ("en-US") and the SSML
 		// voice gender ("neutral").
-		Voice: &texttospeechpb.VoiceSelectionParams{
-			LanguageCode: "en-GB",
-			Name:         "en-GB-Wavenet-C",
-			SsmlGender:   texttospeechpb.SsmlVoiceGender_FEMALE,
-		},
-		// Select the type of audio file you want returned.
-		AudioConfig: &texttospeechpb.AudioConfig{
-			AudioEncoding: texttospeechpb.AudioEncoding_MP3,
-			SpeakingRate:  1.2,
-		},
+		Voice:       voiceParams,
+		AudioConfig: audioConfig,
 	}
 
 	resp, err := client.SynthesizeSpeech(ctx, &req)
@@ -49,13 +69,13 @@ func CreateMp3(message string) string {
 		log.Fatal(err)
 	}
 
-	filename := "output-" + time.Now().Format("2006-01-02-15-04-05") + ".mp3"
+	filename := time.Now().Format("2006-01-02-15-04-05") + ".mp3"
 
-	dir := filepath.Join(".", "audio")
+	dir := filepath.Join(".", "audio", openai.GetSystemModel().String())
 	os.MkdirAll(dir, os.ModePerm)
 
 	filepath := filepath.Join(dir, filename)
-	err = ioutil.WriteFile(filepath, resp.AudioContent, 0644)
+	err = os.WriteFile(filepath, resp.AudioContent, 0644)
 
 	return filepath
 }
