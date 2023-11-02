@@ -19,7 +19,8 @@ var (
 		Label:       "",
 		HideEntered: true,
 	}
-	speakToggle = false
+	speakToggle  = false
+	speak2Toggle = false
 )
 
 func TalkToAi() {
@@ -51,6 +52,14 @@ func TalkToAi() {
 			fmt.Println("Speaker disabled.")
 		}
 		return
+	case promptResult == "/speak2":
+		speak2Toggle = !speak2Toggle
+		if speak2Toggle {
+			fmt.Println("Speak2 enabled.")
+		} else {
+			fmt.Println("Speak2 disabled.")
+		}
+		return
 	case promptResult == "/lngmdl":
 		selectLanguageModelByPrompt()
 		return
@@ -77,6 +86,10 @@ func TalkToAi() {
 		return
 	}
 
+	if speak2Toggle {
+		audio.Record()
+		promptResult, _ = audio.Transcribe()
+	}
 	PromptAi(promptResult)
 }
 
@@ -85,18 +98,23 @@ func PromptAi(promptResult string) {
 	spinner := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	spinner.Prefix = "Thinking... "
 	spinner.Start()
+
 	response := openai.QueryOpenAi(messages)
 	spinner.Stop()
 	fmt.Println(response + "\n")
 
 	textMessages.LogResult(promptResult, response)
-	if speakToggle {
+
+	if speakToggle || speak2Toggle {
 		spinner.Prefix = "Synthing... "
 		spinner.Start()
 		mp3File := audio.CreateMp3(response)
-		//_ = audio.CreateMp3(response)
+
 		spinner.Stop()
-		audio.PlaySound(mp3File)
+		err := audio.PlaySound(mp3File)
+		if err != nil {
+			fmt.Println(err)
+		}
 	}
 }
 
@@ -107,6 +125,7 @@ Type one of the following commands:
 '/end' to exit the program.
 '/close' to start a new chat session and archive the current conversation. 
 '/speak' to toggle speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
+'/speak2' to toggle mic and speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
 '/lngmdl' to select language model, chatgpt or davinci.
 '/sysmdl' to select system model.
 '/clean' delete -l "log" and -a "audio" folders at local path. 

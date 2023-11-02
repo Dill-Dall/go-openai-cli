@@ -12,8 +12,6 @@ import (
 )
 
 func main() {
-	//audio.RecordPrompt()
-
 	for true {
 		cmd.TalkToAi()
 	}

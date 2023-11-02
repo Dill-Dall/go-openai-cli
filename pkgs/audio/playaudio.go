@@ -9,7 +9,19 @@ import (
 	"github.com/hajimehoshi/oto/v2"
 )
 
+var c *oto.Context
+
+func init() {
+	var err error
+	c, _, err = oto.NewContext(24000, 2, 2)
+	if err != nil {
+		panic(err)
+	}
+}
+
 func PlaySound(file string) error {
+	var samplerate int
+
 	f, err := os.Open(file)
 	if err != nil {
 		return err
@@ -21,11 +33,9 @@ func PlaySound(file string) error {
 		return err
 	}
 
-	c, ready, err := oto.NewContext(d.SampleRate(), 2, 2)
 	if err != nil {
 		return err
 	}
-	<-ready
 
 	p := c.NewPlayer(d)
 	defer p.Close()
@@ -44,7 +54,9 @@ func PlaySound(file string) error {
 		if _, key, err := keyboard.GetKey(); err == nil {
 			if key == keyboard.KeySpace || key == keyboard.KeyEnter {
 				if stopPlayback {
+					p.Close()
 					break
+
 				}
 				stopPlayback = true
 			}
@@ -53,9 +65,11 @@ func PlaySound(file string) error {
 		time.Sleep(time.Millisecond * 10)
 
 		if !p.IsPlaying() || stopPlayback {
+			stopPlayback = false
 			break
 		}
 	}
 
+	print(samplerate)
 	return nil
 }
