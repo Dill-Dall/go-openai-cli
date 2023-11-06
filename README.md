@@ -7,6 +7,7 @@ The following commands are available:
 * `/end`: Exit the chatbot
 * `/close`: Start a new chat session and archive the current conversation
 * `/speak`: Toggle text-to-speech output for responses
+* `/speak2`: Enables talking to the ai and get audio answers in return
 * `/lngm`: Select the language model to use (GPT or Davinci)
 * `/sysmodel`: Select the system model to use (AI, Detective, DnDm, or Editor)
 * `/gpt`: Select the GPT language model
