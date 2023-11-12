@@ -21,6 +21,7 @@ var (
 	}
 	speakToggle  = false
 	speak2Toggle = false
+	dalleToggle  = false
 )
 
 func TalkToAi() {
@@ -60,6 +61,14 @@ func TalkToAi() {
 			fmt.Println("Speak2 disabled.")
 		}
 		return
+	case promptResult == "/dalle":
+		dalleToggle = !dalleToggle
+		if dalleToggle {
+			fmt.Println("dalle enabled.")
+		} else {
+			fmt.Println("dalle disabled.")
+		}
+		return
 	case promptResult == "/lngmdl":
 		selectLanguageModelByPrompt()
 		return
@@ -94,16 +103,24 @@ func TalkToAi() {
 }
 
 func PromptAi(promptResult string) {
-	messages := textMessages.CreateMessageThread(promptResult)
+
 	spinner := spinner.New(spinner.CharSets[11], 100*time.Millisecond)
 	spinner.Prefix = "Thinking... "
 	spinner.Start()
 
-	response := openai.QueryOpenAi(messages)
+	var response string
+	if dalleToggle {
+		response = openai.Dalle3(promptResult)
+	} else {
+		messages := textMessages.CreateMessageThread(promptResult)
+		response = openai.QueryOpenAi(messages)
+	}
 	spinner.Stop()
 	fmt.Println(response + "\n")
 
-	textMessages.LogResult(promptResult, response)
+	if !dalleToggle {
+		textMessages.LogResult(promptResult, response)
+	}
 
 	if speakToggle || speak2Toggle {
 		spinner.Prefix = "Synthing... "
@@ -126,6 +143,7 @@ Type one of the following commands:
 '/close' to start a new chat session and archive the current conversation. 
 '/speak' to toggle speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
 '/speak2' to toggle mic and speaker on|off.  - you can abort the audio by double tapping spacebar or enter.
+'/dalle to generate images from prompts.'
 '/lngmdl' to select language model, chatgpt or davinci.
 '/sysmdl' to select system model.
 '/clean' delete -l "log" and -a "audio" folders at local path. 
@@ -165,7 +183,7 @@ func selectSystemModelByPrompt() {
 func selectLanguageModelByPrompt() {
 	prompt := promptui.Select{
 		Label: "Select Language Model",
-		Items: []string{"chatgpt", "davinci"},
+		Items: []string{"chatgpt", "davinci", "gpt4"},
 	}
 	_, result, err := prompt.Run()
 
@@ -178,6 +196,9 @@ func selectLanguageModelByPrompt() {
 		openai.SetModel(openai.GPTModel)
 	case "davinci":
 		openai.SetModel(openai.DavinciModel)
+	case "gpt4":
+		println("gpt4")
+		openai.SetModel(openai.GPT4Model)
 	default:
 		fmt.Println("Could not set model " + result)
 		return

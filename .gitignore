@@ -20,6 +20,7 @@
 
 logs
 audio
+dalle
 
 frontend/node_modules
 cloud.json

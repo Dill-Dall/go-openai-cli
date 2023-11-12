@@ -12,7 +12,7 @@ import (
 )
 
 func main() {
-	for true {
+	for {
 		cmd.TalkToAi()
 	}
 

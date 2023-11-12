@@ -2,15 +2,17 @@ package textMessages
 
 import (
 	"fmt"
-	"go_openai_cli/pkgs/openai"
 	"os"
 	"path/filepath"
 	"regexp"
 	"strings"
 	"time"
 
+	myopenai "go_openai_cli/pkgs/openai"
+
 	"github.com/pkg/errors"
-	gogpt "github.com/sashabaranov/go-gpt3"
+
+	"github.com/sashabaranov/go-openai"
 )
 
 var regexForUserAssistant = regexp.MustCompile("#* *(USER|ASSISTANT):((.|\n)*?)\n(#####|---)")
@@ -78,9 +80,9 @@ func RotateLogFile(fileTitle string) error {
 	return nil
 }
 
-func CreateMessageThread(newPrompt string) []gogpt.ChatCompletionMessage {
-	messages := []gogpt.ChatCompletionMessage{}
-	newMessage := gogpt.ChatCompletionMessage{Role: "user", Content: newPrompt}
+func CreateMessageThread(newPrompt string) []openai.ChatCompletionMessage {
+	messages := []openai.ChatCompletionMessage{}
+	newMessage := openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: newPrompt}
 	// create log file directory if it doesn't exist
 	logDir := filepath.Dir(aiLogFile)
 	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
@@ -99,13 +101,13 @@ func CreateMessageThread(newPrompt string) []gogpt.ChatCompletionMessage {
 	if err != nil {
 		fmt.Printf("Error reading log messages: %v\n", err)
 	}
-	messages = append(messages, openai.SystemMessage(openai.GetSystemModel()))
+	messages = append(messages, myopenai.SystemMessage(myopenai.SystemModel(myopenai.GetSystemModel())))
 	messages = append(messages, previousMessages...)
 	messages = append(messages, newMessage)
 	return messages
 }
 
-func readLogMessages() ([]gogpt.ChatCompletionMessage, error) {
+func readLogMessages() ([]openai.ChatCompletionMessage, error) {
 
 	logText, err := os.ReadFile(aiLogFile)
 	if err != nil {
@@ -114,13 +116,13 @@ func readLogMessages() ([]gogpt.ChatCompletionMessage, error) {
 
 	// Find all matches
 	matches := regexForUserAssistant.FindAllStringSubmatch(string(logText), -1)
-	logMessages := make([]gogpt.ChatCompletionMessage, 0)
+	logMessages := make([]openai.ChatCompletionMessage, 0)
 
 	// Loop through the matches and print them
 	for _, match := range matches {
 		role := match[1]
 		message := match[2]
-		logMessages = append(logMessages, gogpt.ChatCompletionMessage{
+		logMessages = append(logMessages, openai.ChatCompletionMessage{
 			Role:    strings.ToLower(role),
 			Content: strings.TrimSpace(message),
 		})
