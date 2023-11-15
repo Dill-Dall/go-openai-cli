@@ -3,6 +3,7 @@ package audio
 import (
 	"context"
 	"encoding/json"
+	"go_openai_cli/pkgs/config"
 	"go_openai_cli/pkgs/openai"
 	"io"
 	"log"
@@ -47,11 +48,11 @@ func CreateMp3(message string) string {
 	}
 
 	filename := time.Now().Format("2006-01-02-15-04-05") + ".mp3"
+	var audioFolder = filepath.Join(config.GetDataPath(), "audio")
+	sysModelAudioDir := filepath.Join(audioFolder, openai.GetSystemModel().String())
+	os.MkdirAll(sysModelAudioDir, os.ModePerm)
 
-	dir := filepath.Join(".", "audio", openai.GetSystemModel().String())
-	os.MkdirAll(dir, os.ModePerm)
-
-	filepath := filepath.Join(dir, filename)
+	filepath := filepath.Join(sysModelAudioDir, filename)
 	err = os.WriteFile(filepath, bytes, 0644)
 	if err != nil {
 		fmt.Println("Error:", err)
@@ -61,9 +62,10 @@ func CreateMp3(message string) string {
 }
 
 func DeleteAudioFolder() error {
-	if _, err := os.Stat("audio"); err == nil {
+	var audioFolder = filepath.Join(config.GetDataPath(), "audio")
+	if _, err := os.Stat(audioFolder); err == nil {
 		// audio directory exists, delete it
-		err = os.RemoveAll("audio")
+		err = os.RemoveAll(audioFolder)
 		if err != nil {
 			return err
 		}
@@ -98,7 +100,7 @@ func openaiSynth(input string, voice Voice) ([]byte, error) {
 		return nil, err
 	}
 
-	req.Header.Set("Authorization", "Bearer "+os.Getenv("OPENAI_API_KEY"))
+	req.Header.Set("Authorization", "Bearer "+config.Cfg.OpenAIKey)
 	req.Header.Set("Content-Type", "application/json")
 
 	client := &http.Client{}

@@ -8,6 +8,7 @@ import (
 	"strings"
 	"time"
 
+	"go_openai_cli/pkgs/config"
 	myopenai "go_openai_cli/pkgs/openai"
 
 	"github.com/pkg/errors"
@@ -18,26 +19,35 @@ import (
 var regexForUserAssistant = regexp.MustCompile("#* *(USER|ASSISTANT):((.|\n)*?)\n(#####|---)")
 
 var subfolder = "AI"
-var aiLogFile = filepath.Join("logs", subfolder, "AI.md")
+var sysModelLogFile = filepath.Join("AI", "AI.md")
+
+func logFolder() string {
+	return filepath.Join(config.GetDataPath(), "logs")
+}
+
+func init() {
+	sysModelLogFile = filepath.Join(logFolder(), "AI", "AI.md")
+}
 
 func SetLogSubFolder(subFolderName string) {
 	subfolder = subFolderName
-	aiLogFile = filepath.Join("logs", subFolderName, "AI.md")
+	sysModelLogFile = filepath.Join(logFolder(), subFolderName, "AI.md")
+	print(subFolderName)
 }
 
 func GetAiLogFile() string {
-	return aiLogFile
+	return sysModelLogFile
 }
 
 func LogResult(inputPrompt, response string) error {
+	sysModelLogFile = filepath.Join(logFolder(), subfolder, "AI.md")
 	logDate := time.Now().Format("2006-01-02 15:04:05")
-	logDir := filepath.Join(".", "logs", subfolder)
-	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
+
+	if err := os.MkdirAll(filepath.Join(logFolder(), subfolder), os.ModePerm); err != nil {
 		return errors.Wrap(err, "failed to create log directory")
 	}
-	logFile := filepath.Join(logDir, "AI.md")
 
-	f, err := os.OpenFile(logFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
+	f, err := os.OpenFile(sysModelLogFile, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
 		return errors.Wrap(err, "failed to open log file")
 	}
@@ -51,14 +61,16 @@ func LogResult(inputPrompt, response string) error {
 }
 
 func RotateLogFile(fileTitle string) error {
-	logDir := filepath.Dir(aiLogFile)
+	sysModelLogFile = filepath.Join(logFolder(), subfolder, "AI.md")
+	logDir := filepath.Dir(sysModelLogFile)
+
 	if _, err := os.Stat(logDir); os.IsNotExist(err) {
 		if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
 			return errors.Wrap(err, "failed to create log directory")
 		}
 	}
 
-	logText, err := os.ReadFile(aiLogFile)
+	logText, err := os.ReadFile(sysModelLogFile)
 	if err != nil {
 		return errors.Wrap(err, "failed to read log file")
 	}
@@ -73,7 +85,7 @@ func RotateLogFile(fileTitle string) error {
 		return errors.Wrap(err, "failed to create new log file")
 	}
 
-	if err := os.WriteFile(aiLogFile, []byte{}, 0644); err != nil {
+	if err := os.WriteFile(sysModelLogFile, []byte{}, 0644); err != nil {
 		return errors.Wrap(err, "failed to clear log file")
 	}
 
@@ -84,14 +96,15 @@ func CreateMessageThread(newPrompt string) []openai.ChatCompletionMessage {
 	messages := []openai.ChatCompletionMessage{}
 	newMessage := openai.ChatCompletionMessage{Role: openai.ChatMessageRoleUser, Content: newPrompt}
 	// create log file directory if it doesn't exist
-	logDir := filepath.Dir(aiLogFile)
+	logDir := filepath.Dir(sysModelLogFile)
+	print(logDir)
 	if err := os.MkdirAll(logDir, os.ModePerm); err != nil {
 		fmt.Printf("Error creating log file directory: %v\n", err)
 	}
 
 	// create log file if it doesn't exist
-	if _, err := os.Stat(aiLogFile); os.IsNotExist(err) {
-		if _, err := os.Create(aiLogFile); err != nil {
+	if _, err := os.Stat(sysModelLogFile); os.IsNotExist(err) {
+		if _, err := os.Create(sysModelLogFile); err != nil {
 			fmt.Printf("Error creating log file: %v\n", err)
 		}
 	}
@@ -109,7 +122,7 @@ func CreateMessageThread(newPrompt string) []openai.ChatCompletionMessage {
 
 func readLogMessages() ([]openai.ChatCompletionMessage, error) {
 
-	logText, err := os.ReadFile(aiLogFile)
+	logText, err := os.ReadFile(sysModelLogFile)
 	if err != nil {
 		return nil, errors.Wrap(err, "failed to read log file")
 	}
@@ -131,8 +144,8 @@ func readLogMessages() ([]openai.ChatCompletionMessage, error) {
 }
 
 func DeleteLogFolder() error {
-	if _, err := os.Stat("logs"); err == nil {
-		err = os.RemoveAll("logs")
+	if _, err := os.Stat(logFolder()); err == nil {
+		err = os.RemoveAll(filepath.Join(config.GetDataPath(), "logs"))
 		if err != nil {
 			return err
 		}

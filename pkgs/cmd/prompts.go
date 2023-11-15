@@ -84,6 +84,7 @@ func TalkToAi() {
 			textMessages.DeleteLogFolder()
 			fmt.Println("Logs/Conversation folder deleted.")
 		}
+		//We do not delete dalle images.
 		return
 	case promptResult == "c":
 		promptResult = "continue"
@@ -132,6 +133,7 @@ func PromptAi(promptResult string) {
 		if err != nil {
 			fmt.Println(err)
 		}
+
 	}
 }
 

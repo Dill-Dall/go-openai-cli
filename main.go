@@ -8,6 +8,7 @@ import (
 	"github.com/joho/godotenv"
 
 	"go_openai_cli/pkgs/cmd"
+	"go_openai_cli/pkgs/config"
 	"go_openai_cli/pkgs/openai"
 )
 
@@ -19,6 +20,11 @@ func main() {
 }
 
 func init() {
+
+	// Set default data path based on user's home directory
+	// Load the .env file from the configuration path
+	config.SetConfig()
+
 	godotenv.Load()
 	openai.Init()
 

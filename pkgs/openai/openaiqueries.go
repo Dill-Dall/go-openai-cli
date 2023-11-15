@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"go_openai_cli/pkgs/config"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -38,8 +39,7 @@ func SetModel(model OpenAiModel) {
 }
 
 func Init() {
-	apiKey := os.Getenv("OPENAI_API_KEY")
-	goClient = openai.NewClient(apiKey)
+	goClient = openai.NewClient(config.Cfg.OpenAIKey)
 	ctx = context.Background()
 }
 
@@ -120,7 +120,7 @@ func Dalle(prompt string) string {
 }
 
 func Dalle3(prompt string) string {
-	client := openai.NewClient(os.Getenv("OPENAI_API_KEY"))
+	client := openai.NewClient(config.Cfg.OpenAIKey)
 	resp, err := client.CreateImage(
 		context.Background(),
 		openai.ImageRequest{
@@ -141,7 +141,7 @@ func Dalle3(prompt string) string {
 		fmt.Printf("Base64 decode error: %v\n", err)
 		return ""
 	}
-	fileName := writeFile(prompt, b)
+	fileName := writeDalleFile(prompt, b)
 	return fmt.Sprintf("file saved to %s", fileName)
 }
 
@@ -176,8 +176,9 @@ func getNextFileName(basename string, dir string) (string, error) {
 	return fmt.Sprintf("%s/%d-%s.png", dir, max+1, basename), nil
 }
 
-func writeFile(filename string, b []byte) string {
-	fileName, err := getNextFileName(filename, "dalle")
+func writeDalleFile(filename string, b []byte) string {
+
+	fileName, err := getNextFileName(filename, filepath.Join(config.GetDataPath(), "dalle"))
 	if err != nil {
 		fmt.Printf("Error getting next file name: %v\n", err)
 		return ""
