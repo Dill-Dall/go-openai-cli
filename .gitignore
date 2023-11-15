@@ -18,10 +18,9 @@
 # Dependency directories (remove the comment below to include it)
 # vendor/
 
-logs
-audio
-dalle
+./logs
+./audio
+./dalle
 
 frontend/node_modules
 cloud.json
-logs
